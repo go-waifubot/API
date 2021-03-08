@@ -11,7 +11,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -35,7 +34,7 @@ func main() {
 		apiPort = 3333
 	}
 
-	ctx, fn := context.WithTimeout(nil, time.Second)
+	ctx, fn := context.WithTimeout(context.Background(), time.Second)
 	defer fn()
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
@@ -55,11 +54,7 @@ func main() {
 	r.Use(loggerMiddleware(&log))
 
 	// Cors
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "OPTIONS"},
-		MaxAge:         300,
-	}))
+	r.Use(middleware.SetHeader("Access-Control-Allow-Origin", "*"))
 
 	// Set application/json as content type
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
