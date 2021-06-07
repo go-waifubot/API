@@ -22,12 +22,16 @@ func main() {
 		apiPort = 3333
 	}
 
-	d, err := db.Init(db.Config{
+	conf := db.Config{
 		User:     os.Getenv("DB_USER"),
 		Database: os.Getenv("DB_NAME"),
 		Password: os.Getenv("DB_PASS"),
 		Host:     os.Getenv("DB_HOST"),
-	})
+	}
+
+	log.Debug().Interface("config", conf).Msg("Running with config")
+
+	d, err := db.Init(conf)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not connect to database")
 	}

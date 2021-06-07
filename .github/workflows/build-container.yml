@@ -21,7 +21,7 @@ jobs:
         with:
           login-server: ghcr.io
           username: karitham
-          password: ${{ secrets.GR_PAT }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build and push
         run: |
