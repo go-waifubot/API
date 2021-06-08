@@ -20,7 +20,7 @@ jobs:
         uses: azure/docker-login@v1
         with:
           login-server: ghcr.io
-          username: karitham
+          username: go-waifubot
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build and push

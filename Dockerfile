@@ -22,6 +22,8 @@ FROM alpine:3.13
 
 WORKDIR /app
 
+EXPOSE 3333
+
 # Copy our static executable.
 COPY --from=builder /app/app ./app
 
