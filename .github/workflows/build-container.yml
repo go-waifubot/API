@@ -26,4 +26,4 @@ jobs:
       - name: build and push
         run: |
           docker buildx create --name builder0 --use
-          docker buildx build --platform linux/arm64,linux/amd64 --push --tag ghcr.io/go-waifubot/api .
+          docker buildx build --platform linux/arm64,linux/amd64 --push --tag ghcr.io/go-waifubot/api:${GITHUB_REF##*/} .

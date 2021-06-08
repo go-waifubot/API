@@ -11,9 +11,9 @@ type Querier interface {
 
 type Profile struct {
 	Quote    string `json:"quote,omitempty"`
+	Favorite Char   `json:"favorite,omitempty"`
 	Waifus   []Char `json:"waifus,omitempty"`
 	ID       int64  `json:"id"`
-	Favorite int64  `json:"favorite,omitempty"`
 }
 
 type Char struct {
@@ -39,13 +39,22 @@ func mapUser(userRows ...getProfileRow) *Profile {
 	}
 
 	p := &Profile{
-		ID:       userRows[0].UserID,
-		Favorite: userRows[0].Favorite.Int64,
-		Quote:    userRows[0].Quote,
-		Waifus:   make([]Char, 0, len(userRows)),
+		ID:     userRows[0].UserID,
+		Quote:  userRows[0].Quote,
+		Waifus: make([]Char, 0, len(userRows)),
 	}
 
 	for _, u := range userRows {
+		if u.Favorite.Int64 == u.ID {
+			p.Favorite = Char{
+				ID:    u.ID,
+				Name:  u.Name,
+				Image: u.Image,
+				Type:  u.Type,
+				Date:  u.Date,
+			}
+		}
+
 		p.Waifus = append(p.Waifus, Char{
 			ID:    u.ID,
 			Name:  u.Name,
