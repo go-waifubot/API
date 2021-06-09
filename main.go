@@ -53,11 +53,10 @@ func main() {
 
 	// CORS
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*"},
-		AllowedMethods:   []string{"GET", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
-		AllowCredentials: false,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		AllowedOrigins: []string{"https://*", "http://*"},
+		AllowedMethods: []string{"GET", "OPTIONS"},
+		AllowedHeaders: []string{"Accept", "Content-Type"},
+		MaxAge:         300, // Maximum value not ignored by any of major browsers
 	}))
 
 	// Implement GET /user/123
