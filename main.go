@@ -11,6 +11,7 @@ import (
 	"github.com/Karitham/httperr"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-waifubot/api/db"
 	"github.com/rs/zerolog/log"
 )
@@ -47,11 +48,17 @@ func main() {
 	// Logger
 	r.Use(loggerMiddleware(&log.Logger))
 
-	// Cors
-	r.Use(middleware.SetHeader("Access-Control-Allow-Origin", "*"))
-
 	// Set application/json as content type
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
+
+	// CORS
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*"},
+		AllowedMethods:   []string{"GET", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
 	// Implement GET /user/123
 	r.Route("/user", func(r chi.Router) {
