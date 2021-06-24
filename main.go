@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/stampede"
 	"github.com/go-waifubot/api/db"
 	"github.com/rs/zerolog/log"
 )
@@ -53,16 +54,17 @@ func main() {
 
 	// CORS
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"https://*", "http://*"},
-		AllowedMethods: []string{"GET", "OPTIONS"},
-		AllowedHeaders: []string{"Accept", "Content-Type"},
-		MaxAge:         300, // Maximum value not ignored by any of major browsers
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Content-Type"},
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		AllowCredentials: true,
 	}))
 
 	// Implement GET /user/123
 	r.Route("/user", func(r chi.Router) {
 		r.Route("/{userID}", func(r chi.Router) {
-			r.Get("/", api.getUser)
+			r.With(stampede.Handler(512, 5*time.Second)).Get("/", api.getUser)
 		})
 	})
 
@@ -88,9 +90,9 @@ func (a *APIContext) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := a.db.Profile(r.Context(), int64(id))
-	if err != nil {
+	if err != nil || user.ID == 0 {
 		httperr.JSON(w, r, &httperr.DefaultError{Message: "user not found", ErrorCode: "GU0001", StatusCode: 404})
-		log.Err(err).Msg("fetching user ID")
+		log.Debug().Err(err).Msg("fetching user ID")
 		return
 	}
 

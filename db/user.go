@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -28,6 +29,8 @@ func (q *Queries) Profile(ctx context.Context, userID int64) (*Profile, error) {
 	p, err := q.getProfile(ctx, userID)
 	if err != nil {
 		return nil, err
+	} else if len(p) == 0 {
+		return nil, errors.New("nothing found")
 	}
 
 	return mapUser(p...), nil
