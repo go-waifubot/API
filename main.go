@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -85,14 +84,25 @@ func (a *APIContext) getUser(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(userID)
 	if err != nil || id == 0 {
-		fmt.Fprintf(w, "invalid ID provided: %d", id)
+		herr := &httperr.DefaultError{
+			Message:    "invalid id provided",
+			ErrorCode:  "GU0002",
+			StatusCode: 400,
+		}
+		httperr.JSON(w, r, herr)
+		log.Debug().Err(herr).Msg("invalid ID")
 		return
 	}
 
 	user, err := a.db.Profile(r.Context(), int64(id))
 	if err != nil || user.ID == 0 {
-		httperr.JSON(w, r, &httperr.DefaultError{Message: "user not found", ErrorCode: "GU0001", StatusCode: 404})
-		log.Debug().Err(err).Msg("fetching user ID")
+		herr := &httperr.DefaultError{
+			Message:    "user not found",
+			ErrorCode:  "GU0001",
+			StatusCode: 404,
+		}
+		httperr.JSON(w, r, herr)
+		log.Debug().Err(herr).Msg("fetching user ID")
 		return
 	}
 
