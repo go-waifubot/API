@@ -17,13 +17,19 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Login to GitHub Container Registry
-        uses: azure/docker-login@v1
+        uses: docker/login-action@v1
         with:
-          login-server: ghcr.io
-          username: go-waifubot
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: karitham
+          password: ${{ secrets.GR_PAT }}
 
-      - name: build and push
-        run: |
-          docker buildx create --name builder0 --use
-          docker buildx build --platform linux/arm64,linux/amd64 --push --tag ghcr.io/go-waifubot/api:${GITHUB_REF##*/} .
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/go-waifubot/api:${GITHUB_REF##*/}
+          cache-from: type=registry,ref=go-waifubot/api:${GITHUB_REF##*/}
+          cache-to: type=inline
