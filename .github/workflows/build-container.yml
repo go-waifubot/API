@@ -30,6 +30,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           builder: ${{ steps.buildx.outputs.name }}
-          tags: ghcr.io/go-waifubot/api:${GITHUB_REF##*/}
-          cache-from: type=registry,ref=go-waifubot/api:${GITHUB_REF##*/}
+          tags: ghcr.io/go-waifubot/api:postgres
+          cache-from: type=registry,ref=go-waifubot/api:postgres
           cache-to: type=inline
