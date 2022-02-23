@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -17,22 +18,14 @@ import (
 )
 
 func main() {
-	p := os.Getenv("API_PORT")
+	p := os.Getenv("PORT")
 	apiPort, err := strconv.Atoi(p)
 	if err != nil || apiPort == 0 {
 		apiPort = 3333
 	}
 
-	conf := db.Config{
-		User:     os.Getenv("DB_USER"),
-		Database: os.Getenv("DB_NAME"),
-		Password: os.Getenv("DB_PASS"),
-		Host:     os.Getenv("DB_HOST"),
-	}
-
-	log.Debug().Interface("config", conf).Msg("Running with config")
-
-	d, err := db.Init(conf)
+	url := os.Getenv("DB_URL")
+	d, err := db.Init(url)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not connect to database")
 	}
@@ -65,6 +58,9 @@ func main() {
 		r.Route("/{userID}", func(r chi.Router) {
 			r.With(stampede.Handler(512, 5*time.Second)).Get("/", api.getUser)
 		})
+	})
+	r.Get("/", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "Hello user, you shouldn't be there, direct yourself to https://github.com/go-waifubot/api for docs")
 	})
 
 	log.Info().Int("API_PORT", apiPort).Msg("API started")
