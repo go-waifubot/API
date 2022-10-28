@@ -55,16 +55,15 @@ func main() {
 
 	// Implement GET /user/123
 	r.Route("/user", func(r chi.Router) {
-		r.Route("/{userID}", func(r chi.Router) {
-			r.With(stampede.Handler(512, 5*time.Second)).Get("/", api.getUser)
-		})
+		r.Use(stampede.Handler(512, 5*time.Second))
+		r.Get("/find", api.findUser)
+		r.Get("/{userID}", api.getUser)
 	})
 	r.Get("/", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, "Hello user, you shouldn't be there, direct yourself to https://github.com/go-waifubot/api for docs")
 	})
 
 	log.Info().Int("API_PORT", apiPort).Msg("API started")
-
 	if err := http.ListenAndServe(":"+strconv.Itoa(apiPort), r); err != nil {
 		log.Fatal().Err(err).Int("Port", apiPort).Msg("Listen and serve crash")
 	}
@@ -103,6 +102,43 @@ func (a *APIContext) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = json.NewEncoder(w).Encode(user); err != nil {
+		log.Err(err).Msg("encoding request")
+	}
+}
+
+func (a *APIContext) findUser(w http.ResponseWriter, r *http.Request) {
+	anilist := r.URL.Query().Get("anilist")
+	if anilist == "" {
+		herr := &httperr.DefaultError{
+			Message:    "anilist query param is required",
+			ErrorCode:  "FU0001",
+			StatusCode: 400,
+		}
+
+		httperr.JSON(w, r, herr)
+		log.Debug().Err(herr).Msg("fetching user ID")
+		return
+	}
+
+	user, err := a.db.UserByAnilistURL(r.Context(), fmt.Sprintf("https://anilist.co/user/%s", anilist))
+	if err != nil || user.UserID == 0 {
+		herr := &httperr.DefaultError{
+			Message:    "user not found",
+			ErrorCode:  "FU0002",
+			StatusCode: 404,
+		}
+		httperr.JSON(w, r, herr)
+		log.Debug().Err(herr).Msg("fetching user ID")
+		return
+	}
+
+	type resp struct {
+		ID int64 `json:"id,string"`
+	}
+
+	if err = json.NewEncoder(w).Encode(resp{
+		ID: user.UserID,
+	}); err != nil {
 		log.Err(err).Msg("encoding request")
 	}
 }

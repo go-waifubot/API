@@ -8,13 +8,16 @@ import (
 
 type Querier interface {
 	Profile(context.Context, int64) (*Profile, error)
+	UserByAnilistURL(context.Context, string) (*User, error)
 }
 
 type Profile struct {
-	Quote    string `json:"quote,omitempty"`
-	Favorite Char   `json:"favorite,omitempty"`
-	Waifus   []Char `json:"waifus,omitempty"`
-	ID       int64  `json:"id"`
+	ID         int64  `json:"id,string"`
+	Quote      string `json:"quote,omitempty"`
+	Tokens     int32  `json:"tokens,omitempty"`
+	AnilistURL string `json:"anilist_url,omitempty"`
+	Favorite   Char   `json:"favorite,omitempty"`
+	Waifus     []Char `json:"waifus,omitempty"`
 }
 
 type Char struct {
@@ -36,15 +39,33 @@ func (q *Queries) Profile(ctx context.Context, userID int64) (*Profile, error) {
 	return mapUser(p...), nil
 }
 
+func (q *Queries) UserByAnilistURL(ctx context.Context, anilistURL string) (*User, error) {
+	u, err := q.getUserByAnilist(ctx, anilistURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return &User{
+		UserID:     u.UserID,
+		Quote:      u.Quote,
+		Date:       u.RollDate,
+		Favorite:   u.Favorite,
+		Tokens:     u.Tokens,
+		AnilistUrl: u.AnilistUrl,
+	}, nil
+}
+
 func mapUser(userRows ...getProfileRow) *Profile {
 	if len(userRows) < 1 {
 		return nil
 	}
 
 	p := &Profile{
-		ID:     userRows[0].UserID,
-		Quote:  userRows[0].Quote,
-		Waifus: make([]Char, 0, len(userRows)),
+		ID:         userRows[0].UserID,
+		Quote:      userRows[0].Quote,
+		Tokens:     userRows[0].Tokens,
+		AnilistURL: userRows[0].AnilistUrl,
+		Waifus:     make([]Char, 0, len(userRows)),
 	}
 
 	for _, u := range userRows {
