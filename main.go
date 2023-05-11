@@ -16,6 +16,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var cacheAge = strconv.Itoa(int((time.Minute * 2).Seconds()))
+
 func main() {
 	p := os.Getenv("PORT")
 	apiPort, err := strconv.Atoi(p)
@@ -49,6 +51,7 @@ func main() {
 
 	// Implement GET /user/123
 	r.Route("/user", func(r chi.Router) {
+		r.Use(middleware.SetHeader("Cache-Control", "public, max-age="+cacheAge))
 		r.Get("/find", api.findUser)
 		r.Get("/{userID}", api.getUser)
 	})
