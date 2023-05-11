@@ -12,7 +12,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/go-chi/stampede"
 	"github.com/go-waifubot/api/db"
 	"github.com/rs/zerolog/log"
 )
@@ -34,10 +33,10 @@ func main() {
 	}
 
 	r := chi.NewRouter()
-	r.Use(middleware.Compress(9))
 	r.Use(middleware.Timeout(5 * time.Second))
 	r.Use(loggerMiddleware(&log.Logger))
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
+	r.Use(middleware.Compress(5))
 
 	// CORS
 	r.Use(cors.Handler(cors.Options{
@@ -50,7 +49,6 @@ func main() {
 
 	// Implement GET /user/123
 	r.Route("/user", func(r chi.Router) {
-		r.Use(stampede.Handler(512, 5*time.Second))
 		r.Get("/find", api.findUser)
 		r.Get("/{userID}", api.getUser)
 	})
