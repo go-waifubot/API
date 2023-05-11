@@ -34,14 +34,9 @@ func main() {
 	}
 
 	r := chi.NewRouter()
-
-	// Timeout
+	r.Use(middleware.Compress(9))
 	r.Use(middleware.Timeout(5 * time.Second))
-
-	// Logger
 	r.Use(loggerMiddleware(&log.Logger))
-
-	// Set application/json as content type
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
 
 	// CORS
@@ -73,7 +68,6 @@ type APIContext struct {
 	db db.Querier
 }
 
-// getUser is the request handler
 func (a *APIContext) getUser(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 
